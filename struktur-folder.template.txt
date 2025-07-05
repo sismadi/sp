@@ -1,0 +1,16 @@
+presensi-app/
+├── public/                  # Assets publik
+│   └── index.html
+├── src/
+│   ├── components/          # Komponen UI
+│   ├── pages/               # Halaman utama (login, dashboard, dsb)
+│   ├── services/            # API call logic
+│   ├── App.js
+│   └── main.js
+├── backend/                 # Backend (Node/Laravel)
+│   ├── routes/
+│   ├── controllers/
+│   └── models/
+├── .env.example             # Contoh environment variable
+├── README.md
+└── package.json
