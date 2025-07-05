@@ -1,0 +1,113 @@
+Bagus! Supabase sangat cocok untuk aplikasi presensi karena menyediakan fitur:
+Autentikasi (Auth)
+Database PostgreSQL bawaan
+API otomatis (REST/GraphQL)
+Storage untuk file (jika diperlukan)
+Realtime (untuk monitoring presensi)
+
+Arsitektur Aplikasi Presensi dengan Supabase
+[Frontend (React/Vue/HTML)] <--> [Supabase Backend]
+        |                                 |
+        |--- Login / SignUp  ------------>|
+        |<-- Token + Session ------------ |
+        |--- CRUD Presensi -------------->|
+        |<-- Data Presensi -------------- |
+
+
+1. Struktur Tabel Supabase
+🔹 Tabel users (otomatis dari Supabase Auth)
+Disediakan otomatis setelah user signup.
+Tambahkan kolom custom jika perlu dengan SQL seperti:
+alter table auth.users
+add column role text default 'mahasiswa';
+
+🔹 Tabel kelas
+Kolom
+Tipe
+Keterangan
+id
+uuid
+PRIMARY KEY
+nama_kelas
+text
+Nama kelas
+dosen_id
+uuid
+Refer ke auth.users
+
+🔹 Tabel presensi
+Kolom
+Tipe
+Keterangan
+id
+uuid
+PRIMARY KEY
+user_id
+uuid
+Refer ke auth.users
+kelas_id
+uuid
+Refer ke kelas
+waktu_presensi
+timestamptz
+default: now()
+lokasi
+text
+(misal IP atau keterangan lokasi)
+status
+text
+hadir / tidak hadir
+
+
+2. Supabase Setup Langkah demi Langkah
+a. Signup dan Buat Project
+Buka https://supabase.com
+Buat akun dan project baru
+
+b. Setup Auth
+Masuk ke menu Authentication → Settings
+Aktifkan metode email + password
+
+c. Setup Database
+Masuk ke menu Table Editor
+Buat tabel kelas dan presensi sesuai struktur di atas
+Hubungkan foreign key user_id, kelas_id
+
+3. Contoh Login/Register (Javascript)
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient('https://your-project.supabase.co', 'public-anon-key')
+
+// Register
+await supabase.auth.signUp({
+  email: 'mahasiswa@example.com',
+  password: 'password123'
+})
+
+// Login
+const { data, error } = await supabase.auth.signInWithPassword({
+  email: 'mahasiswa@example.com',
+  password: 'password123'
+})
+
+
+4. Contoh Input Presensi
+const user = await supabase.auth.getUser()
+
+const { error } = await supabase
+  .from('presensi')
+  .insert([{
+    user_id: user.data.user.id,
+    kelas_id: 'uuid-kelas',
+    lokasi: '192.168.0.1',
+    status: 'hadir'
+  }])
+
+
+5. Contoh Fetch Rekap Presensi
+const { data, error } = await supabase
+  .from('presensi')
+  .select('user_id, waktu_presensi, lokasi, status')
+  .eq('kelas_id', 'uuid-kelas')
+
+
